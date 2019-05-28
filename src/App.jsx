@@ -6,12 +6,18 @@ import ListaRacas from './components/ListaRacas'
 import Cabecalho from './components/Cabecalho'
 
 import { buscaSobreRacas, buscaImagemPorRaca, buscaTodasRacas } from './api'
+import StatusContext from './context/status'
+import RacaSelecionadaContext from './context/racaSelecionada'
+import RacasContext from './context/racas'
 
 class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      racas: [],
+      racasContext: {
+        racas: [],
+        selecionaRaca: this.selecionaRaca
+      },
       racaSelecionada: {},
       status: 'Você ainda não selecionou nenhum cachorro :('
     }
@@ -38,12 +44,12 @@ class App extends React.Component {
           const listaRacasMostradas = sobreRacas.filter(
             sobre => racas.includes(sobre.name.toLowerCase())
           )
-          this.setState({ racas: [...listaRacasMostradas] })
+          this.setState({ racasContext: { ...this.state.racasContext, racas: [...listaRacasMostradas] } })
         })
     }
 
     selecionaRaca = raca => {
-      const infoSelecionada = this.state.racas.filter(infoRaca => infoRaca.name === raca)
+      const infoSelecionada = this.state.racasContext.racas.filter(infoRaca => infoRaca.name === raca)
 
       buscaImagemPorRaca(raca)
         .then(imagem => this.setState({
@@ -61,9 +67,15 @@ class App extends React.Component {
   render() {
     return (
       <div className="container">
-        <Cabecalho status={this.state.status} />
-        <Raca raca={this.state.racaSelecionada} />
-        <ListaRacas racas={this.state.racas} selecionaRaca={this.selecionaRaca} />
+        <StatusContext.Provider value={this.state.status}>
+          <Cabecalho />
+        </StatusContext.Provider>
+        <RacaSelecionadaContext.Provider value={this.state.racaSelecionada}>
+          <Raca />
+        </RacaSelecionadaContext.Provider>
+        <RacasContext.Provider value={this.state.racasContext}>
+          <ListaRacas />
+        </RacasContext.Provider>
       </div>
     )
   }
